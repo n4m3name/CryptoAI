@@ -1,4 +1,3 @@
-
 import csv
 from collections import deque
 from datetime import datetime
@@ -12,10 +11,14 @@ def get_last_lines(name, n=5000): #john
     return np.array(lines, dtype=float)
 
 def time_to_row(time): #john
-    date
+    dt = datetime.utcfromtimestamp(time)
+    return [dt.weekday(), dt.day, dt.month, dt.year, dt.hour, dt.minute]
 
 def convert_date(array): #john
-    times = array[:, -1]
-    new_arr = np.array
+    times = array[:, 0]
+    new_arr = np.array([time_to_row(i) for i in times])
+    return np.concatenate((array, new_arr), axis=1)
 
-get_last_lines("Kraken_OHLCVT/XBTUSD_15.csv")
+lines = get_last_lines("Kraken_OHLCVT/XBTUSD_15.csv")
+lines = convert_date(lines)
+print(lines[:2])
