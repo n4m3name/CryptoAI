@@ -19,6 +19,21 @@ def convert_date(array): #john
     new_arr = np.array([time_to_row(i) for i in times])
     return np.concatenate((array, new_arr), axis=1)
 
-lines = get_last_lines("Kraken_OHLCVT/XBTUSD_15.csv")
+def label_data(array):
+    np.append(array, np.zeros((len(array), 1)), axis=1)
+    for i in range(len(array)-2):
+        change = (array[i+1][4] - array[i][4]) / array[i][4]
+        if change > 0.004:
+            array[i][-1] = 2
+        elif change > -0.004:
+            array[i][-1] = 1
+        else:
+            array[i][-1] = 0
+    
+  
+
+lines = get_last_lines("../Kraken_OHLCVT/XBTUSD_15.csv")
 lines = convert_date(lines)
+print(lines[:2])
+label_data(lines)
 print(lines[:2])
