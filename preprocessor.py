@@ -18,4 +18,4 @@ def convert_date(array): #john
     times = array[:, -1]
     new_arr = np.array
 
-get_last_lines("../Kraken_OHLCVT/XBTUSD_15.csv")
+get_last_lines("Kraken_OHLCVT/XBTUSD_15.csv")
