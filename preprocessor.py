@@ -1,23 +1,12 @@
 from datetime import datetime
 import numpy as np
 import pandas as pd
+from itertools import tee, product
+from collections import deque
 
-"""
-Keep this filepath for any commits. 
-Just label the file correctly and move it into the working directory
-"""
-filepath = "Kraken_OHLCVT/XBTUSD_15.csv"
 
 # This is the threshold for determining if a coin went up. I forget what number we wanted to use.
 threshold = 0.004
-
-# Dataframe
-df = pd.read_csv(filepath)
-
-# Labels for the columns of the dataframe
-df.columns = ["Timestamp", "Open", "High", "Low", "Close", "Value", "Trades"]
-
-print(df.describe())
 
 def add_datetime_features(df):
     """
@@ -68,14 +57,39 @@ def add_features(df):
 
     return df
 
+"""
+Keep this filepath for any commits. 
+Just label the file correctly and move it into the working directory
+"""
+
+# List of coins and times
+coins = ['XBTUSD', 'ETHUSD', 'XRPUSD', 'SOLUSD', 'XDGUSD', 'PEPEUSD', 'XCNUSD', 'SUIUSD', 'LTCUSD', 'ADAUSD', 'LINKUSD', 'AAVEUSD', 'ONDOUSD', 'ACHUSD', 'WIFUSD', 'LDOUSD', 'TAOUSD', 'DOTUSD']
+
+times = [1, 5, 15, 30, 60, 240, 720, 1440]
+
+# path generator
+paths = (f"Kraken_OHLCVT/{coin}_{time}.csv" for coin in coins for time in times)
+
+
+# Dataframe generator
+framemaker = (pd.read_csv(path) for path in paths)
+
+labels = ["Timestamp", "Open", "High", "Low", "Close", "Value", "Trades"]
+
+# Labels for the columns of the dataframe
+column_adder = map(lambda x: x.set_axis(labels, axis=1), framemaker)
+
+
+#print(df.describe())
+
 # Add the features
-df = add_features(df)
+feature_adder = map(add_features, column_adder)
 
 # Rename the filepath to the destination filepath
-filepath = filepath.removesuffix(".csv") + "with_features.csv"
+filepaths = (f"coins/{coin}_{time}_with_features.csv" for coin, time in product(coins, times))
 
 # Add the csv with added features to the destination filepath (should be right beside the original file)
-df.to_csv(filepath, index=False)
+deque((df.to_csv(filepath, index=False) for df, filepath in zip(feature_adder, filepaths)), maxlen=0)
 
 # Numpy data object
-data = np.genfromtxt(filepath, delimiter=',', skip_header=0, filling_values=np.nan)
+#data = np.genfromtxt(filepath, delimiter=',', skip_header=0, filling_values=np.nan)
