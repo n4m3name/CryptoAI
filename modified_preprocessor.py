@@ -42,7 +42,7 @@ def add_features(df):
     df["SMA_10"] = df["Close"].rolling(window=10).mean()  # 10-period moving average
     df["SMA_50"] = df["Close"].rolling(window=50).mean()  # 50-period moving average
     df["RSI_14"] = compute_rsi(df["Close"]) # 14-period relative strength index
-    df["Return"] = df["Close"].pct_change() # Percent change from last close
+    df["Return"] = df["Close"].pct_change(periods=-1) # Percent change from next close
 
     # Bollinger Bands
     df["Middle_Band"] = df["Close"].rolling(window=20).mean()
@@ -50,7 +50,7 @@ def add_features(df):
     df["Lower_Band"] = df["Middle_Band"] - (df["Close"].rolling(window=20).std() * 2)
 
     df["Return_Signal"] = df["Return"].apply(
-        lambda x: 1 if x > threshold else (0 if 0 <= x <= threshold else -1)
+        lambda x: 2 if x > threshold else (1 if 0 <= x <= threshold else 0)
     )
 
     add_datetime_features(df)
@@ -86,7 +86,7 @@ column_adder = map(lambda x: x.set_axis(labels, axis=1), framemaker)
 feature_adder = map(add_features, column_adder)
 
 # Rename the filepath to the destination filepath
-filepaths = (f"coins/{coin}_{time}_with_features.csv" for coin, time in product(coins, times))
+filepaths = (f"ncoins/{coin}_{time}_with_features.csv" for coin, time in product(coins, times))
 
 # Add the csv with added features to the destination filepath (should be right beside the original file)
 deque((df.to_csv(filepath, index=False) for df, filepath in zip(feature_adder, filepaths)), maxlen=0)
