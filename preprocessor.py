@@ -2,22 +2,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-"""
-Keep this filepath for any commits. 
-Just label the file correctly and move it into the working directory
-"""
-filepath = "Kraken_OHLCVT/XBTUSD_15.csv"
-
 # This is the threshold for determining if a coin went up. I forget what number we wanted to use.
 threshold = 0.004
-
-# Dataframe
-df = pd.read_csv(filepath)
-
-# Labels for the columns of the dataframe
-df.columns = ["Timestamp", "Open", "High", "Low", "Close", "Value", "Trades"]
-
-print(df.describe())
 
 def add_datetime_features(df):
     """
@@ -68,14 +54,21 @@ def add_features(df):
 
     return df
 
-# Add the features
-df = add_features(df)
 
-# Rename the filepath to the destination filepath
-filepath = filepath.removesuffix(".csv") + "with_features.csv"
+def process_file(filepath):
+    df = pd.read_csv(filepath)
 
-# Add the csv with added features to the destination filepath (should be right beside the original file)
-df.to_csv(filepath, index=False)
+    df.columns = ["Timestamp", "Open", "High", "Low", "Close", "Value", "Trades"]
 
-# Numpy data object
-data = np.genfromtxt(filepath, delimiter=',', skip_header=0, filling_values=np.nan)
+    df = add_features(df)
+
+    # Handle NaNs
+    df.fillna(method="ffill", inplace=True)
+    df.fillna(method="bfill", inplace=True)
+    df.fillna(0, inplace=True)
+
+    # Save processed data
+    new_filepath = filepath.replace(".csv", "_with_features.csv")
+    df.to_csv(new_filepath, index=False)
+
+    return df  # Return DataFrame instead of filepath
